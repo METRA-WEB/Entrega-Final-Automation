@@ -1,0 +1,3234 @@
+{
+  "name": "TP Final",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=ASUNTO DEL TICKET:\n{{ $('Gmail Trigger').item.json.subject }}\n\nCUERPO DEL TICKET:\n{{ $('Gmail Trigger').item.json.text }}\n\nCONTEXTO DEL SOLICITANTE OBTENIDO DESDE AIRTABLE:\nNombre: {{ $('Buscar usuario solicitante').item.json.fields.Nombre }}\nRol: {{ $('Buscar usuario solicitante').item.json.fields.Rol }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Sos un asistente especializado en triage de tickets de soporte técnico interno.\n\nTu tarea es analizar el asunto y el cuerpo de un correo recibido por Gmail y clasificar el incidente para su posterior registro y gestión en Airtable.\n\nDebés devolver una salida estructurada en JSON y respetar estrictamente los valores permitidos.\n\nOBJETIVOS:\n1. Generar un resumen breve y técnico del problema.\n2. Identificar la categoría de soporte más adecuada.\n3. Asignar una prioridad.\n4. Determinar el área responsable.\n5. Sugerir un especialista adecuado.\n6. Explicar brevemente el motivo de la clasificación.\n\nPRIORIDADES PERMITIDAS:\n- Baja\n- Media\n- Alta\n- Crítica\n\nCRITERIOS GENERALES DE PRIORIDAD:\n- Baja: solicitudes rutinarias, instalaciones o altas sin impacto operativo inmediato.\n- Media: inconvenientes que afectan parcialmente al usuario pero permiten continuar trabajando.\n- Alta: incidentes que bloquean tareas importantes, afectan accesos, equipos, red o servicios relevantes.\n- Crítica: incidentes de seguridad, phishing, compromiso de credenciales, pérdida o exposición de información, o situaciones de alto riesgo operativo.\n\nCATEGORÍAS VÁLIDAS:\n- Acceso a aplicaciones internas\n- Correo electrónico\n- Creación de usuario\n- Desbloqueo de usuario\n- Errores de software\n- Impresoras y periféricos\n- Instalación de software\n- Permisos y accesos\n- Phishing y seguridad\n- Red lenta\n- Respaldo y recuperación\n- Soporte de notebook\n- VPN y acceso remoto\n\nÁREAS RESPONSABLES VÁLIDAS:\n- Aplicaciones\n- Comunicaciones\n- Dirección General\n- Finanzas\n- Infraestructura\n- Mesa de Ayuda\n- Recursos Humanos\n- Redes\n- Seguridad Informática\n- Soporte Técnico\n- Tecnología / IT\n\nESPECIALISTAS VÁLIDOS:\n- Elena Navarro\n- Gustavo Romero\n- Laura Méndez\n- Mónica Salas\n- Pablo Iglesias\n- Patricia Duarte\n- Ricardo Silva\n- Sergio Acosta\n\nREGLAS:\n- No inventes categorías, áreas ni especialistas.\n- Usá únicamente valores incluidos en las listas anteriores.\n- Seleccioná una sola categoría.\n- Seleccioná una sola prioridad.\n- Seleccioná una sola área responsable.\n- Seleccioná un solo especialista.\n- El especialista elegido debe ser razonablemente coherente con el tipo de incidente.\n- Si el caso es de phishing o seguridad informática, priorizá Seguridad Informática.\n- No clasifiques como Crítica un caso solamente porque el usuario use palabras como \"urgente\". La prioridad debe surgir del impacto real del incidente.\n- No agregues explicaciones fuera del JSON.\n- No uses Markdown.\n- No uses bloques de código.\n- No cambies los nombres de las claves.\n- El resultado debe ser JSON válido.\n\nFORMATO DE SALIDA:\n\n{\n  \"resumen\": \"Breve resumen técnico del incidente\",\n  \"categoria\": \"Errores de software\",\n  \"prioridad\": \"Media\",\n  \"area_responsable\": \"Soporte Técnico\",\n  \"especialista_sugerido\": \"Sergio Acosta\",\n  \"motivo_clasificacion\": \"El incidente afecta parcialmente el trabajo del usuario y requiere intervención de soporte técnico.\"\n}"
+        }
+      },
+      "id": "89445c30-c9db-40cc-a630-42e99ec91481",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        -1264
+      ],
+      "retryOnFail": false,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"resumen\": \"Breve resumen técnico del incidente\",\n  \"categoria\": \"Errores de software\",\n  \"prioridad\": \"Media\",\n  \"area_responsable\": \"Soporte Técnico\",\n  \"especialista_sugerido\": \"Sergio Acosta\",\n  \"motivo_clasificacion\": \"El incidente afecta parcialmente el trabajo del usuario y requiere intervención de soporte técnico.\"\n}"
+      },
+      "id": "0372da31-25f4-4ce9-bf55-9831263cb22f",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        -1088
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "ricardo.silva@empresa.com",
+        "subject": "Error en Workflow",
+        "message": "={{ $('Registrar error').item.json.fields[\"Detalle error\"] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -976
+      ],
+      "id": "60965783-1c19-4a16-b9dc-f3c4f045d704",
+      "name": "Notificación a Supervisor",
+      "webhookId": "2adf6e89-4e9a-4258-9879-c5a630ac09be",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XNjQeLv4znlbbgUH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "35775f7c-c926-451e-a811-83e6926d01a9",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1312,
+        -1344
+      ],
+      "id": "cd1fddf6-e747-4592-a217-8577d5d42400",
+      "name": "Aprobado?"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrMgDoV2T2w9zwm",
+          "mode": "list",
+          "cachedResultName": "Ejecuciones",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblrMgDoV2T2w9zwm"
+        },
+        "filterByFormula": "={Gmail Message ID}='{{ $('Gmail Trigger').item.json.id }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -592,
+        -720
+      ],
+      "id": "41071930-5633-4dae-9c66-7f167d525697",
+      "name": "Buscar ejecución previa",
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrMgDoV2T2w9zwm",
+          "mode": "list",
+          "cachedResultName": "Ejecuciones",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblrMgDoV2T2w9zwm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Gmail Message ID": "={{ $('Gmail Trigger').item.json.id }}",
+            "Fecha inicio": "={{ $now.toISO() }}",
+            "Estado ejecución": "En curso"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Ejecución",
+              "displayName": "ID Ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Gmail Message ID",
+              "displayName": "Gmail Message ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ticket",
+              "displayName": "Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha inicio",
+              "displayName": "Fecha inicio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha fin",
+              "displayName": "Fecha fin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ruta",
+              "displayName": "Ruta",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Normal",
+                  "value": "Normal"
+                },
+                {
+                  "name": "Urgente",
+                  "value": "Urgente"
+                },
+                {
+                  "name": "Camino Infeliz",
+                  "value": "Camino Infeliz"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Estado ejecución",
+              "displayName": "Estado ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "En curso",
+                  "value": "En curso"
+                },
+                {
+                  "name": "Exitosa",
+                  "value": "Exitosa"
+                },
+                {
+                  "name": "Bloqueada",
+                  "value": "Bloqueada"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado HITL",
+              "displayName": "Resultado HITL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Tipo de error",
+              "displayName": "Tipo de error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "OpenAI API",
+                  "value": "OpenAI API"
+                },
+                {
+                  "name": "Validación output IA",
+                  "value": "Validación output IA"
+                },
+                {
+                  "name": "Configuración",
+                  "value": "Configuración"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Detalle error",
+              "displayName": "Detalle error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        -944
+      ],
+      "id": "a8418b7b-986e-4a4a-b8e7-7ceb8c4796ed",
+      "name": "Registrar inicio de ejecución",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Gmail Trigger').item.json.threadId }}",
+        "contextWindowLength": 10
+      },
+      "id": "1a1e6000-d587-4ef3-a877-eb8fba3622e8",
+      "name": "Memoria Contextual",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        528,
+        -960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8dabb867-ded1-4627-b1db-bedf1d7f5242",
+              "leftValue": "={{ $('Gmail Trigger').item.json.from.text }}",
+              "rightValue": "=\\b(?:[Nn][Oo][\\s._-]*[Rr][Ee][Pp][Ll][Yy]|[Dd][Oo][\\s._-]*[Nn][Oo][Tt][\\s._-]*[Rr][Ee][Pp][Ll][Yy])\\b",
+              "operator": {
+                "type": "string",
+                "operation": "notRegex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -768,
+        -720
+      ],
+      "id": "62144c75-d6c7-4f7a-9c5e-9270841a326e",
+      "name": "Filtro no.reply"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3a8b141c-55a3-4f5b-ab6f-d896e1a36c29",
+              "leftValue": "={{ Object.keys($json).length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -400,
+        -720
+      ],
+      "id": "45d61829-99bf-4837-9d4d-2c4de70db2b1",
+      "name": "Mensaje nuevo?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "79f22ba1-ab6f-4246-9d17-a54c38977b94",
+              "leftValue": "={{ ($('Gmail Trigger').item.json.subject || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "82999cfc-b2bb-427e-8b9a-a820784ca2db",
+              "leftValue": "={{ ($('Gmail Trigger').item.json.text || '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        16,
+        -944
+      ],
+      "id": "a2030870-5262-482b-b218-0f15da0cb024",
+      "name": "Datos mínimos completos?"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrMgDoV2T2w9zwm",
+          "mode": "list",
+          "cachedResultName": "Ejecuciones",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblrMgDoV2T2w9zwm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Fecha fin": "={{ $now }}",
+            "Detalle error": "Datos incompletos: falta asunto y/o cuerpo del correo.",
+            "Error": "={{ false }}",
+            "Ruta": "Camino Infeliz",
+            "Estado ejecución": "Bloqueada"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "ID Ejecución",
+              "displayName": "ID Ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Gmail Message ID",
+              "displayName": "Gmail Message ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ticket",
+              "displayName": "Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha inicio",
+              "displayName": "Fecha inicio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha fin",
+              "displayName": "Fecha fin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ruta",
+              "displayName": "Ruta",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Normal",
+                  "value": "Normal"
+                },
+                {
+                  "name": "Urgente",
+                  "value": "Urgente"
+                },
+                {
+                  "name": "Camino Infeliz",
+                  "value": "Camino Infeliz"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado ejecución",
+              "displayName": "Estado ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "En curso",
+                  "value": "En curso"
+                },
+                {
+                  "name": "Exitosa",
+                  "value": "Exitosa"
+                },
+                {
+                  "name": "Bloqueada",
+                  "value": "Bloqueada"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado HITL",
+              "displayName": "Resultado HITL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tipo de error",
+              "displayName": "Tipo de error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "OpenAI API",
+                  "value": "OpenAI API"
+                },
+                {
+                  "name": "Validación output IA",
+                  "value": "Validación output IA"
+                },
+                {
+                  "name": "Configuración",
+                  "value": "Configuración"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Detalle error",
+              "displayName": "Detalle error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        -720
+      ],
+      "id": "a892c668-a510-45f5-bdf5-ec669a3f252a",
+      "name": "Camino Infeliz",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek-flash",
+        "options": {
+          "maxTokens": 2500
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        448,
+        -1088
+      ],
+      "id": "af900aed-cb4d-4610-9b40-d2ead575ec89",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "lxsuYWPI6weobvDx",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('AI Agent').item.json.output.prioridad }}",
+                    "rightValue": "Baja",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2a3ae58d-892d-48f2-8d8d-13537e9f7fd5"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Baja"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cb96f9df-ba20-4112-8bb2-04d482206dae",
+                    "leftValue": "={{ $('AI Agent').item.json.output.prioridad }}",
+                    "rightValue": "Media",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Media"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3a102e33-d474-45c3-8473-90b623dc75c8",
+                    "leftValue": "={{ $('AI Agent').item.json.output.prioridad }}",
+                    "rightValue": "Alta",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Alta"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "27393cf1-afe0-4ebd-8f89-18e7fd0083fa",
+                    "leftValue": "={{ $('AI Agent').item.json.output.prioridad }}",
+                    "rightValue": "Crítica",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Crítica"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        -1568
+      ],
+      "id": "c36b1814-a48c-411b-8f86-ee11f398e51c",
+      "name": "Definir prioridad"
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAo9403F0tyNgTU",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblAo9403F0tyNgTU"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Estado": "Procesado por IA",
+            "Título": "={{ $('Gmail Trigger').item.json.subject }}",
+            "Descripción": "={{ $('Gmail Trigger').item.json.text }}",
+            "Resumen IA": "={{ $('AI Agent').item.json.output.resumen }}",
+            "Prioridad sugerida por IA": "={{ $('AI Agent').item.json.output.prioridad }}",
+            "Motivo de clasificación IA": "={{ $('AI Agent').item.json.output.motivo_clasificacion }}",
+            "Fecha de procesamiento IA": "={{ $now }}",
+            "Fecha de creación": "={{ $now }}",
+            "Prioridad": "={{ $('AI Agent').item.json.output.prioridad }}",
+            "Usuario solicitante": "={{ [$('Buscar usuario solicitante').item.json.id] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Ticket",
+              "displayName": "ID Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Título",
+              "displayName": "Título",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Aprobado por humano",
+                  "value": "Aprobado por humano"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Usuario solicitante",
+              "displayName": "Usuario solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Área solicitante",
+              "displayName": "Área solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Área responsable",
+              "displayName": "Área responsable",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Categoría",
+              "displayName": "Categoría",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Crítica",
+                  "value": "Crítica"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Especialista asignado",
+              "displayName": "Especialista asignado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha de creación",
+              "displayName": "Fecha de creación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de cierre",
+              "displayName": "Fecha de cierre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Resumen IA",
+              "displayName": "Resumen IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Categoría sugerida por IA",
+              "displayName": "Categoría sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prioridad sugerida por IA",
+              "displayName": "Prioridad sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Crítica",
+                  "value": "Crítica"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Área sugerida por IA",
+              "displayName": "Área sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Especialista sugerido por IA",
+              "displayName": "Especialista sugerido por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Motivo de clasificación IA",
+              "displayName": "Motivo de clasificación IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de procesamiento IA",
+              "displayName": "Fecha de procesamiento IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Revisión humana",
+              "displayName": "Revisión humana",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                },
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha de revisión humana",
+              "displayName": "Fecha de revisión humana",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Adjuntos",
+              "displayName": "Adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ejecuciones",
+              "displayName": "Ejecuciones",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -1680
+      ],
+      "id": "80aec683-5886-4377-a195-1aa876eac5aa",
+      "name": "Crear Ticket",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $('Gmail Trigger').item.json.headers.to }}",
+        "subject": "={{ $('Gmail Trigger').item.json.headers.subject }}",
+        "message": "=Ticket crítico detectado.\n\nTítulo: {{ $('Gmail Trigger').item.json.subject }}\n\nDescripción del caso:\n{{ $('Gmail Trigger').item.json.text }}",
+        "approvalOptions": {
+          "values": {
+            "approvalType": "double",
+            "approveLabel": "Aprobar",
+            "disapproveLabel": "Rechazar"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -1344
+      ],
+      "id": "2195b131-af68-44fc-9664-d49618bf0810",
+      "name": "HITL Crítica",
+      "webhookId": "804699a5-128e-41c5-af7d-132ac43bc448",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XNjQeLv4znlbbgUH",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAo9403F0tyNgTU",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblAo9403F0tyNgTU"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Título": "={{ $('Gmail Trigger').item.json.subject }}",
+            "Descripción": "={{ $('Gmail Trigger').item.json.text }}",
+            "Resumen IA": "={{ $('AI Agent').item.json.output.resumen }}",
+            "Prioridad sugerida por IA": "={{ $('AI Agent').item.json.output.prioridad }}",
+            "Motivo de clasificación IA": "={{ $('AI Agent').item.json.output.motivo_clasificacion }}",
+            "Fecha de procesamiento IA": "={{ $now }}",
+            "Prioridad": "Crítica",
+            "Fecha de creación": "={{ $now }}",
+            "Revisión humana": "Rechazado",
+            "Fecha de revisión humana": "={{ $now }}",
+            "Estado": "Rechazado",
+            "Usuario solicitante": "={{ [$('Buscar usuario solicitante').item.json.id] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Ticket",
+              "displayName": "ID Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Título",
+              "displayName": "Título",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Aprobado por humano",
+                  "value": "Aprobado por humano"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Usuario solicitante",
+              "displayName": "Usuario solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Área solicitante",
+              "displayName": "Área solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Área responsable",
+              "displayName": "Área responsable",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Categoría",
+              "displayName": "Categoría",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Crítica",
+                  "value": "Crítica"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Especialista asignado",
+              "displayName": "Especialista asignado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha de creación",
+              "displayName": "Fecha de creación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de cierre",
+              "displayName": "Fecha de cierre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Resumen IA",
+              "displayName": "Resumen IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Categoría sugerida por IA",
+              "displayName": "Categoría sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prioridad sugerida por IA",
+              "displayName": "Prioridad sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Crítica",
+                  "value": "Crítica"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Área sugerida por IA",
+              "displayName": "Área sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Especialista sugerido por IA",
+              "displayName": "Especialista sugerido por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Motivo de clasificación IA",
+              "displayName": "Motivo de clasificación IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de procesamiento IA",
+              "displayName": "Fecha de procesamiento IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Revisión humana",
+              "displayName": "Revisión humana",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                },
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de revisión humana",
+              "displayName": "Fecha de revisión humana",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Adjuntos",
+              "displayName": "Adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ejecuciones",
+              "displayName": "Ejecuciones",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        -1248
+      ],
+      "id": "387e9159-d04d-4600-a61c-168f5d30468c",
+      "name": "Crear Ticket crítico rechazado",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrMgDoV2T2w9zwm",
+          "mode": "list",
+          "cachedResultName": "Ejecuciones",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblrMgDoV2T2w9zwm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Error": "={{ true }}",
+            "Fecha fin": "={{ $now }}",
+            "Estado ejecución": "Bloqueada",
+            "id": "={{ $('Registrar inicio de ejecución').item.json.id }}",
+            "Ruta": "Error",
+            "Detalle error": "={{ $json.error }}",
+            "Tipo de error": "Configuración"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "ID Ejecución",
+              "displayName": "ID Ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Gmail Message ID",
+              "displayName": "Gmail Message ID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ticket",
+              "displayName": "Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha inicio",
+              "displayName": "Fecha inicio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha fin",
+              "displayName": "Fecha fin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ruta",
+              "displayName": "Ruta",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Normal",
+                  "value": "Normal"
+                },
+                {
+                  "name": "Urgente",
+                  "value": "Urgente"
+                },
+                {
+                  "name": "Camino Infeliz",
+                  "value": "Camino Infeliz"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado ejecución",
+              "displayName": "Estado ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "En curso",
+                  "value": "En curso"
+                },
+                {
+                  "name": "Exitosa",
+                  "value": "Exitosa"
+                },
+                {
+                  "name": "Bloqueada",
+                  "value": "Bloqueada"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado HITL",
+              "displayName": "Resultado HITL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tipo de error",
+              "displayName": "Tipo de error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "OpenAI API",
+                  "value": "OpenAI API"
+                },
+                {
+                  "name": "Validación output IA",
+                  "value": "Validación output IA"
+                },
+                {
+                  "name": "Configuración",
+                  "value": "Configuración"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Detalle error",
+              "displayName": "Detalle error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        896,
+        -976
+      ],
+      "id": "48164cbb-3a3b-4ce0-a426-e4c384404e9e",
+      "name": "Registrar error",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrMgDoV2T2w9zwm",
+          "mode": "list",
+          "cachedResultName": "Ejecuciones",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblrMgDoV2T2w9zwm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Error": "={{ false }}",
+            "id": "={{ $('Registrar inicio de ejecución').item.json.id }}",
+            "Fecha fin": "={{ $now }}",
+            "Ruta": "Normal",
+            "Estado ejecución": "Exitosa",
+            "Ticket": "={{ [$('Crear Ticket').item.json.id] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "ID Ejecución",
+              "displayName": "ID Ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Ticket",
+              "displayName": "Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha inicio",
+              "displayName": "Fecha inicio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha fin",
+              "displayName": "Fecha fin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ruta",
+              "displayName": "Ruta",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Normal",
+                  "value": "Normal"
+                },
+                {
+                  "name": "Urgente",
+                  "value": "Urgente"
+                },
+                {
+                  "name": "Camino Infeliz",
+                  "value": "Camino Infeliz"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado ejecución",
+              "displayName": "Estado ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "En curso",
+                  "value": "En curso"
+                },
+                {
+                  "name": "Exitosa",
+                  "value": "Exitosa"
+                },
+                {
+                  "name": "Bloqueada",
+                  "value": "Bloqueada"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado HITL",
+              "displayName": "Resultado HITL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tipo de error",
+              "displayName": "Tipo de error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "API de IA",
+                  "value": "API de IA"
+                },
+                {
+                  "name": "Validación output IA",
+                  "value": "Validación output IA"
+                },
+                {
+                  "name": "Configuración",
+                  "value": "Configuración"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Detalle error",
+              "displayName": "Detalle error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        -1680
+      ],
+      "id": "88f5bc40-bef0-4f8f-92a3-3d141fe92e09",
+      "name": "Cerrar ejecución normal",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -960,
+        -720
+      ],
+      "id": "186f2790-5c17-45c8-ba91-d6f5bbe7c53a",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iwblbgkApQYL0tCf",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tbl1BGpnlTBEs42vN",
+          "mode": "list",
+          "cachedResultName": "Usuarios",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tbl1BGpnlTBEs42vN"
+        },
+        "filterByFormula": "={Correo electrónico}='{{ $('Gmail Trigger').item.json.from.value[0].address }}'",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        256,
+        -1264
+      ],
+      "id": "3419f144-fcfc-4995-b4e0-16f946359d44",
+      "name": "Buscar usuario solicitante",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblrMgDoV2T2w9zwm",
+          "mode": "list",
+          "cachedResultName": "Ejecuciones",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblrMgDoV2T2w9zwm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Error": "={{ false }}",
+            "id": "={{ $('Registrar inicio de ejecución').item.json.id }}",
+            "Fecha fin": "={{ $now }}",
+            "Ruta": "Urgente",
+            "Estado ejecución": "Exitosa",
+            "Ticket": "={{ [$json.id] }}",
+            "Resultado HITL": "={{ $('Aprobado?').item.json.data.approved ? 'Aprobado' : 'Rechazado' }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "ID Ejecución",
+              "displayName": "ID Ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Ticket",
+              "displayName": "Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha inicio",
+              "displayName": "Fecha inicio",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha fin",
+              "displayName": "Fecha fin",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ruta",
+              "displayName": "Ruta",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Normal",
+                  "value": "Normal"
+                },
+                {
+                  "name": "Urgente",
+                  "value": "Urgente"
+                },
+                {
+                  "name": "Camino Infeliz",
+                  "value": "Camino Infeliz"
+                },
+                {
+                  "name": "Error",
+                  "value": "Error"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado ejecución",
+              "displayName": "Estado ejecución",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "En curso",
+                  "value": "En curso"
+                },
+                {
+                  "name": "Exitosa",
+                  "value": "Exitosa"
+                },
+                {
+                  "name": "Bloqueada",
+                  "value": "Bloqueada"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Resultado HITL",
+              "displayName": "Resultado HITL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Error",
+              "displayName": "Error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tipo de error",
+              "displayName": "Tipo de error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "API de IA",
+                  "value": "API de IA"
+                },
+                {
+                  "name": "Validación output IA",
+                  "value": "Validación output IA"
+                },
+                {
+                  "name": "Configuración",
+                  "value": "Configuración"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Detalle error",
+              "displayName": "Detalle error",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        -1344
+      ],
+      "id": "cfd606eb-143f-4c6c-9189-c41d966b7e1e",
+      "name": "Cerrar ejecución crítica",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2086b8c5-671b-4701-aecb-b1f6c2786a7c",
+              "leftValue": "={{ $('Aprobado?').item.json.data.approved }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1920,
+        -1344
+      ],
+      "id": "f1dfecfc-4f8b-419b-b377-11fa6876097d",
+      "name": "HITL aprobado?"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C1HP4T2D9",
+          "mode": "list",
+          "cachedResultName": "all-critical-department"
+        },
+        "text": "=🚨 TICKET CRÍTICO APROBADO\n\nPrioridad: {{ $('AI Agent').item.json.output.prioridad }}\nAsunto: {{ $('Gmail Trigger').item.json.subject }}\n\nResumen:\n{{ $('AI Agent').item.json.output.resumen }}\n\nEstado: Aprobado por humano\nAcción requerida: atender el incidente con prioridad inmediata.",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        2096,
+        -1344
+      ],
+      "id": "339280cf-f262-4c19-a11b-8d434cc46aa4",
+      "name": "Notificar a Critical Department",
+      "webhookId": "eb9f1c7d-db21-4800-ba94-99f10f8ddaf2",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "fTmaS5mevqqbxdBG",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C1U5EHFMG",
+          "mode": "list",
+          "cachedResultName": "soporte-técnico"
+        },
+        "text": "=🎫 NUEVO TICKET DE SOPORTE\n\nAsunto: {{ $('Gmail Trigger').item.json.subject }}\nCategoría: {{ $('AI Agent').item.json.output.categoria }}\nPrioridad: {{ $('AI Agent').item.json.output.prioridad }}\n\nResumen:\n{{ $('AI Agent').item.json.output.resumen }}\n\nMotivo de clasificación:\n{{ $('AI Agent').item.json.output.motivo_clasificacion }}\n\nEstado: Registrado correctamente en Airtable",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        1536,
+        -1680
+      ],
+      "id": "6dce82a8-c9ca-4007-8b5f-fac2ef744188",
+      "name": "Notificar a Soporte Técnico",
+      "webhookId": "b6b5131a-bde3-4a2a-b526-034c0b7a8945",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "fTmaS5mevqqbxdBG",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "airtableOAuth2Api",
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appG2zF90CWGQlWCz",
+          "mode": "list",
+          "cachedResultName": "Triage de Ticketes de Soporte",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblAo9403F0tyNgTU",
+          "mode": "list",
+          "cachedResultName": "Tickets",
+          "cachedResultUrl": "https://airtable.com/appG2zF90CWGQlWCz/tblAo9403F0tyNgTU"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Título": "={{ $('Gmail Trigger').item.json.subject }}",
+            "Descripción": "={{ $('Gmail Trigger').item.json.text }}",
+            "Resumen IA": "={{ $('AI Agent').item.json.output.resumen }}",
+            "Prioridad sugerida por IA": "={{ $('AI Agent').item.json.output.prioridad }}",
+            "Motivo de clasificación IA": "={{ $('AI Agent').item.json.output.motivo_clasificacion }}",
+            "Fecha de procesamiento IA": "={{ $now }}",
+            "Prioridad": "Crítica",
+            "Fecha de creación": "={{ $now }}",
+            "Revisión humana": "Aprobado",
+            "Fecha de revisión humana": "={{ $now }}",
+            "Estado": "Aprobado por humano",
+            "Usuario solicitante": "={{ [$('Buscar usuario solicitante').item.json.id] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "ID Ticket",
+              "displayName": "ID Ticket",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Título",
+              "displayName": "Título",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                },
+                {
+                  "name": "Procesado por IA",
+                  "value": "Procesado por IA"
+                },
+                {
+                  "name": "Aprobado por humano",
+                  "value": "Aprobado por humano"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Usuario solicitante",
+              "displayName": "Usuario solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Área solicitante",
+              "displayName": "Área solicitante",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Área responsable",
+              "displayName": "Área responsable",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Categoría",
+              "displayName": "Categoría",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Crítica",
+                  "value": "Crítica"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Especialista asignado",
+              "displayName": "Especialista asignado",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Fecha de creación",
+              "displayName": "Fecha de creación",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de cierre",
+              "displayName": "Fecha de cierre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Resumen IA",
+              "displayName": "Resumen IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Categoría sugerida por IA",
+              "displayName": "Categoría sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Prioridad sugerida por IA",
+              "displayName": "Prioridad sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Baja",
+                  "value": "Baja"
+                },
+                {
+                  "name": "Media",
+                  "value": "Media"
+                },
+                {
+                  "name": "Alta",
+                  "value": "Alta"
+                },
+                {
+                  "name": "Crítica",
+                  "value": "Crítica"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Área sugerida por IA",
+              "displayName": "Área sugerida por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Especialista sugerido por IA",
+              "displayName": "Especialista sugerido por IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Motivo de clasificación IA",
+              "displayName": "Motivo de clasificación IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de procesamiento IA",
+              "displayName": "Fecha de procesamiento IA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Revisión humana",
+              "displayName": "Revisión humana",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Aprobado",
+                  "value": "Aprobado"
+                },
+                {
+                  "name": "Rechazado",
+                  "value": "Rechazado"
+                },
+                {
+                  "name": "Pendiente",
+                  "value": "Pendiente"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Fecha de revisión humana",
+              "displayName": "Fecha de revisión humana",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Adjuntos",
+              "displayName": "Adjuntos",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Ejecuciones",
+              "displayName": "Ejecuciones",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1536,
+        -1440
+      ],
+      "id": "5b7485b8-dee7-43b7-aa68-ea89fb635e15",
+      "name": "Crear Ticket crítico aprobado",
+      "credentials": {
+        "airtableOAuth2Api": {
+          "id": "5ZEqbB1hjB9x7MnK",
+          "name": "Airtable account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Definir prioridad",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Registrar error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar ejecución previa": {
+      "main": [
+        [
+          {
+            "node": "Mensaje nuevo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memoria Contextual": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar inicio de ejecución": {
+      "main": [
+        [
+          {
+            "node": "Datos mínimos completos?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje nuevo?": {
+      "main": [
+        [
+          {
+            "node": "Registrar inicio de ejecución",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Filtro no.reply": {
+      "main": [
+        [
+          {
+            "node": "Buscar ejecución previa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Datos mínimos completos?": {
+      "main": [
+        [
+          {
+            "node": "Buscar usuario solicitante",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Camino Infeliz",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir prioridad": {
+      "main": [
+        [
+          {
+            "node": "Crear Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HITL Crítica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket": {
+      "main": [
+        [
+          {
+            "node": "Cerrar ejecución normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HITL Crítica": {
+      "main": [
+        [
+          {
+            "node": "Aprobado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aprobado?": {
+      "main": [
+        [
+          {
+            "node": "Crear Ticket crítico aprobado",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Crear Ticket crítico rechazado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar error": {
+      "main": [
+        [
+          {
+            "node": "Notificación a Supervisor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Filtro no.reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar usuario solicitante": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket crítico rechazado": {
+      "main": [
+        [
+          {
+            "node": "Cerrar ejecución crítica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cerrar ejecución crítica": {
+      "main": [
+        [
+          {
+            "node": "HITL aprobado?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HITL aprobado?": {
+      "main": [
+        [
+          {
+            "node": "Notificar a Critical Department",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Camino Infeliz": {
+      "main": [
+        []
+      ]
+    },
+    "Cerrar ejecución normal": {
+      "main": [
+        [
+          {
+            "node": "Notificar a Soporte Técnico",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Ticket crítico aprobado": {
+      "main": [
+        [
+          {
+            "node": "Cerrar ejecución crítica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "690a74b1-f6f0-44ef-9ac8-2ecfbc2fe157",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "107a54904ab8d7ca00400c676db28023b5755ee8b264b4193f8fe0a84a3fe8f0"
+  },
+  "nodeGroups": [],
+  "id": "lt0E8O1pl6lo2Hfa",
+  "tags": []
+}
